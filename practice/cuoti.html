@@ -222,6 +222,7 @@ tr.ans td:first-child{font-weight:700;color:var(--ok)} tr.pick td:first-child{co
   </div>
 </div>
 
+<script src="tiles.js"></script>
 <script>
 const FILE={E:'Ton',S:'Nan',W:'Shaa',N:'Pei',P:'Haku',F:'Hatsu',C:'Chun'}, SUITF={m:'Man',p:'Pin',s:'Sou'};
 const NAME_SUIT={m:'万',p:'饼',s:'索'}, NAME_HON={E:'东',S:'南',W:'西',N:'北',P:'白',F:'发',C:'中'};
@@ -262,7 +263,8 @@ function tile(t,cls='',tag='span'){
   const b=base(t), f=FILE[b] || SUITF[b[1]]+b[0]+(t.endsWith('r')?'-Dora':'');
   el.dataset.k=b;
   if(!cls.includes('in') && (t.endsWith('r') || DORA.has(b))) el.classList.add('dora');
-  el.style.setProperty('--img',`url("tiles/${f}.svg")`);
+  // 牌面图打包在 tiles.js 里（一次请求）；万一没加载到，再按单个文件取
+  el.style.setProperty('--img',`url("${window.TILE_SVG&&TILE_SVG[f]||'tiles/'+f+'.svg'}")`);
   el.setAttribute('aria-label',tname(t)); el.title=tname(t);
   return el;
 }

@@ -81,7 +81,12 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 .tile.rot{transform:rotate(-90deg);margin:0 calc(var(--w) * .17)}
 .tile.hl{outline:calc(var(--w) * .08) solid var(--gold);box-shadow:0 0 calc(var(--w) * .6) var(--gold)}
 button.tile{cursor:pointer;transition:transform .12s ease}
-button.tile:hover:not([aria-disabled]){transform:translateY(-14%)}
+@media (hover:hover){button.tile:hover:not([aria-disabled]){transform:translateY(-14%)}}
+/* 触屏：第一次点选中（牌抬起），再点同一张才打出 */
+button.tile.sel{transform:translateY(-22%);box-shadow:0 0 0 .25cqw var(--gold)}
+.act.sel{transform:translateY(-.6cqw);filter:drop-shadow(0 0 .7cqw var(--gold)) brightness(1.12)}
+.tip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--hw) * 2.1 + 1cqw);z-index:6;pointer-events:none;
+  background:rgba(0,0,0,.72);color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:4px 14px;font-size:13px;white-space:nowrap}
 button.tile[aria-disabled]{cursor:default}
 .tile.right{outline:calc(var(--w) * .07) solid var(--ok);transform:translateY(-14%)}
 .tile.wrong{outline:calc(var(--w) * .07) solid var(--bad);transform:translateY(-14%)}
@@ -150,7 +155,7 @@ button.tile[aria-disabled]{cursor:default}
   font-size:calc(var(--hw) * 1.25);line-height:1;letter-spacing:.02em;color:#fff1c2;-webkit-text-stroke:calc(var(--hw) * .035) var(--ink);paint-order:stroke fill;
   text-shadow:0 calc(var(--hw) * .05) 0 var(--ink), 0 0 calc(var(--hw) * .12) rgba(0,0,0,.45)}
 .act.skip .tx{font-size:calc(var(--hw) * .98);color:#f1f1f1}
-.act:hover:not(:disabled){transform:translateY(-.4cqw);filter:drop-shadow(0 .35cqw .5cqw rgba(0,0,0,.45)) brightness(1.12)}
+@media (hover:hover){.act:hover:not(:disabled){transform:translateY(-.4cqw);filter:drop-shadow(0 .35cqw .5cqw rgba(0,0,0,.45)) brightness(1.12)}}
 .act.pon{--c1:#22b4e6;--c2:#0a4f8f;--ink:#06375c;--fl:rgba(4,40,80,.55)}
 .act.chi{--c1:#36bf86;--c2:#0f5c40;--ink:#0a3f2c;--fl:rgba(5,50,30,.55)}
 .act.kan{--c1:#d257d6;--c2:#6b2687;--ink:#4a1260;--fl:rgba(60,10,70,.5)}
@@ -241,6 +246,8 @@ function meldEl(m,cls){
 }
 function same(k,on){document.querySelectorAll('#stage .top3d .tile[data-k="'+k+'"], #stage .info .tile[data-k="'+k+'"]').forEach(e=>e.classList.toggle('same',on))}
 let hands=[], filter='全部', curId=null, answered=null, recent=[], cardOpen=true;
+// 触屏没有悬停，点一下就打出容易误触：改成先选中、再点一次确认
+const TWO_TAP=matchMedia('(hover: none)').matches; let sel=null;
 let progress={};
 try{progress=JSON.parse(localStorage.getItem('mj-cuoti-v1')||'{}')||{}}catch(e){progress={}}
 // 答题记录：登录后存进自己的私有记录（换设备也在），本地存一份兜底
@@ -281,7 +288,7 @@ function drawNext(){
   const cand=keep>0?ids.filter(id=>!skip.includes(id)):ids;
   let x=Math.random()*cand.reduce((a,id)=>a+weight(id),0);
   curId=cand.find(id=>(x-=weight(id))<0)||cand[cand.length-1];
-  recent=[...recent.filter(id=>id!==curId),curId].slice(-5); answered=null; randPerm();
+  recent=[...recent.filter(id=>id!==curId),curId].slice(-5); answered=null; sel=null; randPerm();
 }
 
 function renderStats(){
@@ -309,7 +316,7 @@ function renderIndex(){
     td(null,`${x.table.round}${x.table.honba?' '+x.table.honba+'本场':''} ${x.turn}`);
     td('num',r.tries?`对 ${r.ok} · 错 ${r.bad}`:'未做');
     td('num',lastAt?md(lastAt.slice(0,10)):'–');
-    const go=()=>{curId=x.id; answered=null; randPerm(); document.getElementById('sheet').hidden=true; renderAll()};
+    const go=()=>{curId=x.id; answered=null; sel=null; randPerm(); document.getElementById('sheet').hidden=true; renderAll()};
     tr.onclick=go; tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); go()}};
     box.append(tr);
   });
@@ -420,7 +427,7 @@ function renderStage(){
         if(mk){pickMarked=true; if(answered.key!==i) b.classList.add('was')}
         const showAi=AI&&lastOf[t]===n;
         if(mk||showAi) b.append(aiEl(showAi?t:null, mk));
-      } else b.onclick=()=>answer(q,t,i);
+      } else {b.dataset.key=i; b.onclick=e=>choose(e,q,t,i)}
     }
     hand.append(b);
   });
@@ -432,10 +439,12 @@ function renderStage(){
     q.choices.forEach(c=>{const b=h('button','act '+({'碰':'pon','吃':'chi','杠':'kan'}[c]||'skip')); b.type='button'; b.setAttribute('aria-label',c==='不碰'?'跳过':c);
       b.append(h('span','fl','✿'),h('span','fl2','✿'),h('span','tx',c==='不碰'?'跳过':c));
       if(done){b.disabled=true; if(q.answers.includes(c)) b.classList.add('sel-ok'); else if(answered.key===c) b.classList.add('sel-bad'); if(AI) b.append(aiEl(c,false))}
-      else b.onclick=()=>answer(q,c,c);
+      else {b.dataset.key=c; b.onclick=e=>choose(e,q,c,c)}
       ac.append(b)});
     st.append(ac);
   }
+
+  if(sel!=null && !done) markSel(isCall?'再点一次确认':'再点一次打出');   // 重绘（如记录同步）后保留选中
 
   // prompt in header, result card over the table
   if(done) pr.append(h('span','cat',q.category));
@@ -459,12 +468,27 @@ function renderStage(){
     }
   }
 }
+// 触屏第一次点只选中；再点同一个才作答，点别处取消
+function choose(e,q,t,key){
+  e.stopPropagation();
+  if(!TWO_TAP || sel===key) return answer(q,t,key);
+  sel=key; markSel(q.type==='call'?'再点一次确认':'再点一次打出');
+}
+function markSel(msg){
+  const st=document.getElementById('stage');
+  st.querySelectorAll('[data-key]').forEach(b=>b.classList.toggle('sel', sel!=null && b.dataset.key===String(sel)));
+  st.querySelectorAll('.tile.same').forEach(e=>e.classList.remove('same'));
+  const b=sel!=null&&st.querySelector('.hand button.sel'); if(b) same(b.dataset.k,true);
+  st.querySelector('.tip')?.remove();
+  if(sel!=null) st.append(h('div','tip',msg));
+}
+document.getElementById('stage').addEventListener('click',()=>{if(sel!=null){sel=null; markSel()}});
 const fmtP=p=>p>=.995?'99%':p<.005?(p>0?'<1%':'0%'):Math.round(p*100)+'%';
 function next(){drawNext(); renderAll()}
 function answer(q,t,key){
   const ok=isAns(q,t);
   const p=progress[q.id]||{tries:0,ok:0}; p.streak=ok?rec(q.id).streak+1:0; p.tries++; if(ok) p.ok++; p.last=ok; p.lastAt=new Date().toISOString(); progress[q.id]=p; save();
-  answered={id:q.id,key,ok,t}; cardOpen=true;
+  answered={id:q.id,key,ok,t}; cardOpen=true; sel=null;
   renderAll();
 }
 function renderResult(q){

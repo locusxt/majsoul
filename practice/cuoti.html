@@ -218,7 +218,7 @@ tr.ans td:first-child{font-weight:700;color:var(--ok)} tr.pick td:first-child{co
   <div class="sheet-in" role="dialog" aria-label="全部题目">
     <div class="sheet-h"><b>全部题目</b><button class="btn" type="button" id="closelist">关闭</button></div>
     <table class="index"><thead><tr><th></th><th>加入时间</th><th>题目</th><th>记录</th><th>上次做</th></tr></thead><tbody id="index"></tbody></table>
-    <p class="foot">随机抽题，没做过的、常错的题出现得更多。列表里不显示题目类型和教训，以免提前看到答案。连续答对 2 次算掌握（绿点），只对了 1 次是黄点。练习记录存在你自己的账号里（未登录时存在当前浏览器）。快捷键：→ 或 N 下一题，Esc 收起 / 展开解析。新的错题由复盘后加入题库。牌面图来自公有领域的 riichi-mahjong-tiles。</p>
+    <p class="foot">随机抽题，没做过的、常错的题出现得更多。列表里不显示题目类型和教训，以免提前看到答案。每次出题会随机对调万、饼、索三种花色（牌形不变），练的是牌形而不是记答案。连续答对 2 次算掌握（绿点），只对了 1 次是黄点。练习记录存在你自己的账号里（未登录时存在当前浏览器）。快捷键：→ 或 N 下一题，Esc 收起 / 展开解析。新的错题由复盘后加入题库。牌面图来自公有领域的 riichi-mahjong-tiles。</p>
   </div>
 </div>
 
@@ -279,7 +279,7 @@ function drawNext(){
   const cand=keep>0?ids.filter(id=>!skip.includes(id)):ids;
   let x=Math.random()*cand.reduce((a,id)=>a+weight(id),0);
   curId=cand.find(id=>(x-=weight(id))<0)||cand[cand.length-1];
-  recent=[...recent.filter(id=>id!==curId),curId].slice(-5); answered=null;
+  recent=[...recent.filter(id=>id!==curId),curId].slice(-5); answered=null; randPerm();
 }
 
 function renderStats(){
@@ -307,18 +307,41 @@ function renderIndex(){
     td(null,`${x.table.round}${x.table.honba?' '+x.table.honba+'本场':''} ${x.turn}`);
     td('num',r.tries?`对 ${r.ok} · 错 ${r.bad}`:'未做');
     td('num',lastAt?md(lastAt.slice(0,10)):'–');
-    const go=()=>{curId=x.id; answered=null; document.getElementById('sheet').hidden=true; renderAll()};
+    const go=()=>{curId=x.id; answered=null; randPerm(); document.getElementById('sheet').hidden=true; renderAll()};
     tr.onclick=go; tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); go()}};
     box.append(tr);
   });
 }
+
+// 花色互换：每次抽题随机对调万、饼、索，牌形和打法不变，免得记住「这题切 7m」
+const SUITS='mps', SUIT_WORD={m:'万子',p:'筒子',s:'索子'}, WORD_SUIT={万:'m',筒:'p',饼:'p',索:'s',条:'s'};
+let perm={m:'m',p:'p',s:'s'};
+function randPerm(){const a=[...SUITS]; for(let i=2;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]} perm={m:a[0],p:a[1],s:a[2]}}
+const permText=t=>t.replace(/(\d+)([mps])/g,(_,n,u)=>n+perm[u]).replace(/([万筒饼索条])子/g,(_,c)=>SUIT_WORD[perm[WORD_SUIT[c]]]);
+const KEEP=new Set(['id','date','added','src','order','type','category']);
+function mapDeep(v){
+  if(typeof v==='string') return permText(v);
+  if(Array.isArray(v)) return v.map(mapDeep);
+  if(v&&typeof v==='object'){const o={}; for(const [k,x] of Object.entries(v)) o[k]=KEEP.has(k)?x:mapDeep(x); return o}
+  return v;
+}
+const tord=t=>{const b=base(t); return /^\d[mps]$/.test(b)?SUITS.indexOf(b[1])*10+ +b[0]:30+'ESWNPFC'.indexOf(b)};
+let viewCache=null;
+function view(q){
+  if(!q) return q;
+  const key=JSON.stringify(perm);
+  if(viewCache&&viewCache.src===q&&viewCache.key===key) return viewCache.q;
+  const v=mapDeep(q); v.hand.sort((a,b)=>tord(a)-tord(b)||a.length-b.length);
+  viewCache={src:q,key,q:v}; return v;
+}
+const permNote=()=>{const ch=[...SUITS].filter(u=>perm[u]!==u); return ch.length?`本题的花色随机对调过（原局的${ch.map(u=>NAME_SUIT[u]+'→'+NAME_SUIT[perm[u]]).join('、')}），牌形和打法都不变。`:''};
 
 function isAns(q,t){return q.answers.some(a=>a===t||base(a)===base(t))}
 function renderStage(){
   const st=document.getElementById('stage'), pr=document.getElementById('prompt');
   st.replaceChildren(); pr.replaceChildren();
   if(!hands.length){st.append(h('div','empty','题库还是空的。复盘新牌谱后，错题会加到这里。')); return}
-  const q=hands.find(x=>x.id===curId);
+  const q=view(hands.find(x=>x.id===curId));
   if(!q){st.append(h('div','empty','这个范围里没有题目了，都已掌握。')); return}
   const T=q.table, isCall=q.type==='call', done=answered&&answered.id===q.id;
   DORA=new Set(T.dora.map(nextDora));
@@ -450,6 +473,7 @@ function renderResult(q){
   v.append(h('span',null,`你选：${nm(answered.t)}　正解：${q.answers.map(nm).join(' 或 ')}　实战：${nm(q.pick)}`+(q.ai&&q.ai.length?`　Mortal：${nm(q.ai[0].a)} ${fmtP(q.ai[0].p)}`:'')));
   r.append(v, h('p','lesson',q.lesson));
   if(q.ai&&q.ai.length) r.append(h('p','ai-note',(call?'按钮下方':'手牌上方')+'的数字和数据条是 Mortal 的推荐率，只作对照，解析以下面的分析为准。'));
+  if(permNote()) r.append(h('p','ai-note',permNote()));
   if(q.situation) r.append(h('p','situ',q.situation));
   (q.explain||[]).forEach(t=>r.append(h('p',null,t)));
   if(q.options&&q.options.length){

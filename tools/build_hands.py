@@ -1,5 +1,6 @@
 """由人工题目 + Mortal 报告生成错题本题库。
 用法: python tools/build_hands.py practice/questions.json practice/hands.json practice/seed  records/<报告>.json [更多报告...]
+报告文件名以对局日期开头，题目按 date 找同一天的报告。
 
 questions.json 每题只写人工判断的部分：
   id, date, category(牌效/防守/副露), type(discard/call), src, answers, lesson, explain, situation
@@ -134,6 +135,8 @@ def build(q,rep,st):
     want=Counter(st['hand']); entries=[e for k in rep['review']['kyokus'] for e in k['entries']]
     es=[e for e in entries if Counter(e['state']['tehai'])==want and
         (any(x['action']['type'] in('pon','chi','daiminkan') for x in e['details']) and e['tile']==act['pai'] if q['type']=='call' else e['actual']['type']=='dahai')]
+    if len(es)>1 and q['type']!='call':   # 同一手牌出现多次（如摸切同一张），用摸到的牌区分
+        es=[e for e in es if e['tile']==st['draw']] or es
     if len(es)==1:
         acc={}
         for x in es[0]['details']:
@@ -149,10 +152,12 @@ def build(q,rep,st):
             if q['type']=='discard' and int(n) not in nums: print(f"  ! {q['id']}: 解析写了 {n} 枚，选项表里没有这个数（{sorted(nums)}）")
     return o
 
-reps=[json.load(open(p,encoding='utf-8')) for p in reports]
+reps=[(os.path.basename(p),json.load(open(p,encoding='utf-8'))) for p in reports]
 out=[]
 for i,q in enumerate(qs):
-    for rep in reps:
+    # 报告文件名以日期开头（records/2026-10-25_mortal_xxx.json），优先用同一天的报告，避免不同对局的同名局混淆
+    cand=[r for n,r in reps if n.startswith(q.get('date',''))] or [r for _,r in reps]
+    for rep in cand:
         st=snapshot(rep,q['src'],q.get('date'))
         if st: break
     else: raise SystemExit(f"{q['id']}: 在报告里找不到 {q['src']}")

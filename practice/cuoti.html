@@ -1,0 +1,501 @@
+<title>雀魂错题本</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&text=%E7%A2%B0%E5%90%83%E6%9D%A0%E8%B7%B3%E8%BF%87%E7%AB%8B%E7%9B%B4%E5%92%8C%E8%87%AA%E6%91%B8&display=swap">
+<style>
+/* Layout: a game-client table (navy felt, central score console, four rivers, opponents' tile backs, own hand along the bottom)
+   centered on one screen, with the question in the header and the analysis as a card over the table. Deliberately a single dark look, like the game client. */
+:root{
+  color-scheme:dark;
+  --bg:#081224; --panel:#0e1b33; --panel2:#132544; --fg:#eef3fb; --muted:#93a6c4; --line:#253a60;
+  --felt-c:#2a4f8c; --felt-e:#122649; --rim:#0a1529;
+  --console:#0b1526; --console-line:#4cc3e6; --cyan:#7fe0f5; --gold:#f2c35b; --gold-ink:#2b1c00;
+  --face:#fbfbf8; --face2:#e9e8e2; --back:#f3a531; --back2:#d9821b;
+  --ok:#55d68f; --ok-bg:#123629; --bad:#ff8c72; --bad-bg:#3e1d18;
+  --font-display:"Noto Serif SC","Songti SC","STSong",serif;
+  --font-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.6}
+.app{height:100%;box-sizing:border-box;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px;padding-block:10px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px}
+h1{font-family:var(--font-display);font-weight:900;font-size:20px;margin:0;letter-spacing:.08em;color:var(--gold)}
+.stats{display:flex;gap:14px;font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}
+.stats b{color:var(--fg);font-size:16px;margin-right:3px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.chips .chips{display:contents}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;padding:3px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink);border-color:var(--gold);font-weight:700}
+button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+.main{min-height:0;display:grid;place-items:center;position:relative}
+.stage{
+  --W:min(calc(100vw - 32px), calc((100dvh - 66px) * 4 / 3), 1400px);
+  width:var(--W);aspect-ratio:4/3;container-type:inline-size;position:relative;overflow:hidden;border-radius:14px;
+  --rw:3.4cqw; --cs:calc(var(--rw) * 6.7); --cy:36cqw; --dt:30.2cqw; --ds:41.5cqw; --bw:3.2cqw; --hw:5.2cqw; --mw:3.8cqw; --iw:2.8cqw;
+  background:radial-gradient(ellipse 70% 75% at 50% 46%, var(--felt-c), var(--felt-e) 78%, var(--rim));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), 0 12px 32px rgba(0,0,0,.5)}
+.stage::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-radial-gradient(circle at 50% 46%, rgba(255,255,255,.018) 0 2px, transparent 2px 7px)}
+@media (max-aspect-ratio:1/1){
+  .main{place-items:start center}
+  .stage{--W:min(calc(100vw - 32px), calc((100dvh - 120px) / 1.12), 760px);aspect-ratio:1/1.12;
+    --rw:5cqw; --cs:calc(var(--rw) * 6.7); --cy:48cqw; --dt:41.7cqw; --ds:40.5cqw; --bw:3.6cqw; --hw:6.4cqw; --mw:4.8cqw; --iw:3cqw}
+  .chips{margin-left:0}
+}
+/* result card sits in the middle of the table; a bottom sheet on portrait screens */
+/* 卡片居中在手牌上方的区域里，不挡手牌和推荐率 */
+.card{--hb:calc(var(--hw) * 2.1 + 3cqw);position:absolute;left:50%;top:calc((100% - var(--hb)) / 2);transform:translate(-50%,-50%);width:min(64cqw,680px);max-height:calc(100% - var(--hb) - 3cqw);overflow:auto;z-index:5;box-sizing:border-box;
+  background:rgba(10,20,38,.94);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.card .head{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:-14px;background:inherit;margin:-14px -16px 0;padding:12px 16px 8px;border-radius:12px 12px 0 0}
+.card .head div{display:flex;gap:8px;flex:none}
+.card .head .pos{flex:1 1 12em}
+.btn{white-space:nowrap}
+/* 收起后的小条：结论 + 展开 + 下一题，放在牌桌右上角 */
+.mini{position:absolute;right:1.6cqw;top:1.6cqw;z-index:5;display:flex;align-items:center;gap:8px;background:rgba(10,20,38,.92);border:1px solid var(--line);border-radius:10px;padding:6px 6px 6px 12px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.mini strong{font-family:var(--font-display);font-size:16px;margin-right:4px}
+.mini.ok strong{color:var(--ok)} .mini.bad strong{color:var(--bad)}
+.mini .btn{padding:5px 12px;font-size:13px}
+@media (max-aspect-ratio:1/1){
+  .card{position:fixed;left:0;right:0;top:auto;bottom:0;width:auto;transform:none;max-height:58dvh;border-radius:14px 14px 0 0;
+    padding-bottom:max(14px, env(safe-area-inset-bottom, 0px));padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+  .mini{position:fixed;top:auto;right:max(16px, env(safe-area-inset-right, 0px));bottom:max(16px, env(safe-area-inset-bottom, 0px))}
+}
+
+/* ---------- tiles ---------- */
+.tile{--w:var(--hw);width:var(--w);height:calc(var(--w) * 1.34);flex:none;position:relative;padding:0;border:0;display:inline-block;box-sizing:border-box;
+  background:var(--img, none) center 46% / 82% auto no-repeat, linear-gradient(170deg, var(--face), var(--face2));
+  border-radius:calc(var(--w) * .12);
+  box-shadow:inset 0 calc(var(--w) * -.03) 0 rgba(0,0,0,.08), 0 calc(var(--w) * .09) 0 var(--back), 0 calc(var(--w) * .13) calc(var(--w) * .12) rgba(0,0,0,.45)}
+.tile.back{background:linear-gradient(170deg, var(--back), var(--back2));box-shadow:0 calc(var(--w) * .09) 0 var(--face2), 0 calc(var(--w) * .13) calc(var(--w) * .12) rgba(0,0,0,.45)}
+.tile.rv{--w:var(--rw)} .tile.bk{--w:var(--bw)} .tile.om{--w:var(--bw)} .tile.in{--w:var(--iw)} .tile.my{--w:var(--hw)}
+.tile.tg{filter:brightness(.8) saturate(.9)}
+.tile.dora::after,.tile.same::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none}
+.tile.dora::after{background:linear-gradient(110deg, transparent 41%, rgba(255,240,190,.35) 45%, rgba(255,226,140,.7) 48.5%, rgba(255,255,255,.95) 50%, rgba(255,226,140,.7) 51.5%, rgba(255,240,190,.35) 55%, transparent 59%) 100% 0 / 300% 100% no-repeat;
+  animation:shine 3.2s cubic-bezier(.45,0,.3,1) infinite}
+.tile.dora{box-shadow:inset 0 calc(var(--w) * -.03) 0 rgba(0,0,0,.08), 0 calc(var(--w) * .09) 0 var(--back), 0 calc(var(--w) * .13) calc(var(--w) * .12) rgba(0,0,0,.45)}
+@keyframes shine{0%{background-position:100% 0}32%,100%{background-position:0% 0}}
+.tile.same::before{background:rgba(255,214,64,.42)}
+.tile.rot{transform:rotate(-90deg);margin:0 calc(var(--w) * .17)}
+.tile.hl{outline:calc(var(--w) * .08) solid var(--gold);box-shadow:0 0 calc(var(--w) * .6) var(--gold)}
+button.tile{cursor:pointer;transition:transform .12s ease}
+button.tile:hover:not([aria-disabled]){transform:translateY(-14%)}
+button.tile[aria-disabled]{cursor:default}
+.tile.right{outline:calc(var(--w) * .07) solid var(--ok);transform:translateY(-14%)}
+.tile.wrong{outline:calc(var(--w) * .07) solid var(--bad);transform:translateY(-14%)}
+.tile.was{outline:calc(var(--w) * .06) solid var(--gold)}
+.mark{font-size:max(11px, calc(var(--w) * .26));white-space:nowrap;color:var(--gold)}
+/* 答题后：手牌上方显示 Mortal 推荐率（数字 + 数据条），实战标记叠在最上面 */
+.ai{position:absolute;left:50%;bottom:calc(100% + var(--w) * .12);transform:translateX(-50%);width:100%;display:grid;justify-items:center;gap:calc(var(--w) * .06);
+  pointer-events:none;font-family:var(--font-body);line-height:1}
+.ai .pn{font-size:max(10px, calc(var(--w) * .24));font-variant-numeric:tabular-nums;color:var(--muted)}
+.ai .bar{width:86%;height:max(3px, calc(var(--w) * .08));background:rgba(255,255,255,.14);border-radius:99px;overflow:hidden}
+.ai .bar i{display:block;height:100%;background:var(--cyan);border-radius:inherit}
+.ai.top .pn{color:var(--cyan);font-weight:700}
+.act .ai{--w:calc(var(--hw) * 1.4);bottom:auto;top:calc(100% + .3cqw);width:60%}
+.ai-note{color:var(--muted);font-size:12px;margin:0}
+
+/* ---------- table furniture ---------- */
+.info{position:absolute;left:1.6cqw;top:1.6cqw;display:grid;gap:.6cqw;z-index:3}
+.info .top{display:flex;align-items:center;gap:.6cqw;background:rgba(4,10,22,.72);border:1px solid rgba(127,224,245,.25);border-radius:1cqw;padding:.6cqw}
+.info .wind{font-family:var(--font-display);font-weight:900;font-size:calc(var(--iw) * .9);width:calc(var(--iw) * 1.25);height:calc(var(--iw) * 1.34);display:grid;place-items:center;background:var(--face);color:#1c2b4a;border-radius:.5cqw}
+.info .ts{display:flex;gap:.25cqw;padding-bottom:calc(var(--iw) * .1)}
+.info .cnt{display:flex;gap:1.6cqw;font-size:calc(var(--iw) * .48);color:var(--fg);padding-left:.4cqw;font-variant-numeric:tabular-nums}
+.info .cnt span::before{content:"";display:inline-block;width:calc(var(--iw) * .9);height:calc(var(--iw) * .22);border-radius:1cqw;margin-right:.5cqw;vertical-align:middle;background:var(--face)}
+.info .cnt span.kt::before{background:radial-gradient(circle, #d4231a 30%, var(--face) 32%)}
+
+.top3d{position:absolute;inset:0}
+.console{position:absolute;left:50%;top:var(--cy);width:var(--cs);height:var(--cs);transform:translate(-50%,-50%);border-radius:1.6cqw;
+  background:radial-gradient(circle at 50% 40%, #16243c, var(--console));
+  box-shadow:0 0 0 .25cqw #1c2c48, 0 0 0 .45cqw rgba(76,195,230,.55), 0 0 2.4cqw rgba(76,195,230,.35), 0 1cqw 2cqw rgba(0,0,0,.5)}
+.console .mid{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:calc(var(--cs) * .02)}
+.console .rd{font-family:var(--font-display);font-weight:900;font-size:calc(var(--cs) * .17);color:var(--cyan);line-height:1.05;text-shadow:0 0 1cqw rgba(127,224,245,.5)}
+.console .hb{font-size:calc(var(--cs) * .075);color:var(--muted);font-variant-numeric:tabular-nums}
+.console .left{font-size:calc(var(--cs) * .085);color:var(--fg);font-variant-numeric:tabular-nums}
+.pivot{position:absolute;left:50%;top:var(--cy);width:0;height:0}
+.pivot.p1{transform:rotate(-90deg)} .pivot.p2{transform:rotate(180deg)} .pivot.p3{transform:rotate(90deg)}
+.seat{position:absolute;left:0;top:calc(var(--cs) * .2);transform:translateX(-50%);display:flex;align-items:baseline;gap:calc(var(--cs) * .05);white-space:nowrap;font-variant-numeric:tabular-nums}
+.seat .wd{font-family:var(--font-display);font-weight:900;font-size:calc(var(--cs) * .11);color:var(--muted)}
+.seat.oya .wd{color:var(--gold)}
+.seat .sc{font-size:calc(var(--cs) * .1);font-weight:700;color:var(--fg)}
+.seat.me .sc{color:var(--gold)}
+.stick{position:absolute;left:0;top:calc(var(--cs) * .38);transform:translateX(-50%);width:calc(var(--cs) * .6);height:calc(var(--cs) * .05);border-radius:1cqw;background:var(--face);box-shadow:0 .2cqw .4cqw rgba(0,0,0,.4)}
+.stick::after{content:"";position:absolute;left:50%;top:50%;width:calc(var(--cs) * .035);height:calc(var(--cs) * .035);border-radius:50%;background:#d4231a;transform:translate(-50%,-50%)}
+.river{position:absolute;left:calc(var(--cs) / -2);top:calc(var(--cs) / 2 + var(--rw) * .45);display:grid;gap:calc(var(--rw) * .12)}
+.river .row{display:flex;align-items:flex-end;gap:calc(var(--rw) * .07)}
+.ohand{position:absolute;top:var(--dt);left:0;transform:translateX(-50%);display:flex;align-items:flex-end;gap:calc(var(--bw) * .5)}
+.p1 .ohand,.p3 .ohand{top:var(--ds)}
+.ohand .bks{display:flex;gap:1px}
+.ohand .mz{display:flex;gap:calc(var(--rw) * .25)}
+.ohand .g{display:flex;gap:calc(var(--rw) * .05)}
+
+.myrow{position:absolute;left:3cqw;right:2.5cqw;bottom:2.2cqw;display:flex;align-items:flex-end;justify-content:space-between;gap:2cqw;z-index:2}
+.hand{display:flex;align-items:flex-end;gap:calc(var(--hw) * .03)}
+.hand .gap{width:calc(var(--hw) * .45);flex:none}
+.mymelds{display:flex;gap:calc(var(--mw) * .3);align-items:flex-end}
+.mymelds .g{display:flex;gap:calc(var(--mw) * .05)}
+.actions{position:absolute;right:10cqw;bottom:calc(var(--hw) * 1.34 + 4.2cqw);display:flex;gap:.6cqw;z-index:3}
+/* 斜切标签式按钮：渐变底、左下装饰线、樱花纹、奶黄毛笔字 */
+.act{position:relative;width:calc(var(--hw) * 3.7);height:calc(var(--hw) * 1.75);padding:0;border:0;background:none;cursor:pointer;
+  --c1:#22b4e6;--c2:#0a4f8f;--ink:#06375c;--fl:rgba(4,40,80,.55);filter:drop-shadow(0 .35cqw .5cqw rgba(0,0,0,.45));transition:transform .12s ease, filter .12s ease}
+.act::before{content:"";position:absolute;left:0;right:0;bottom:0;height:56%;clip-path:polygon(9% 100%, 25% 0, 86% 0, 100% 100%);
+  background:linear-gradient(100deg, var(--c1) 20%, var(--c2) 95%)}
+.act::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:56%;background:var(--c1);
+  clip-path:polygon(0 100%, 17% 6%, 19.5% 6%, 4.2% 90%, 60% 90%, 60% 100%)}
+.act .fl,.act .fl2{position:absolute;bottom:8%;font-size:calc(var(--hw) * .42);line-height:1;color:var(--fl);z-index:1}
+.act .fl{left:17%} .act .fl2{right:16%;font-size:calc(var(--hw) * .55)}
+.act .tx{position:absolute;left:0;right:0;top:0;z-index:2;text-align:center;white-space:nowrap;font-family:"Ma Shan Zheng",var(--font-display);
+  font-size:calc(var(--hw) * 1.25);line-height:1;letter-spacing:.02em;color:#fff1c2;-webkit-text-stroke:calc(var(--hw) * .035) var(--ink);paint-order:stroke fill;
+  text-shadow:0 calc(var(--hw) * .05) 0 var(--ink), 0 0 calc(var(--hw) * .12) rgba(0,0,0,.45)}
+.act.skip .tx{font-size:calc(var(--hw) * .98);color:#f1f1f1}
+.act:hover:not(:disabled){transform:translateY(-.4cqw);filter:drop-shadow(0 .35cqw .5cqw rgba(0,0,0,.45)) brightness(1.12)}
+.act.pon{--c1:#22b4e6;--c2:#0a4f8f;--ink:#06375c;--fl:rgba(4,40,80,.55)}
+.act.chi{--c1:#36bf86;--c2:#0f5c40;--ink:#0a3f2c;--fl:rgba(5,50,30,.55)}
+.act.kan{--c1:#d257d6;--c2:#6b2687;--ink:#4a1260;--fl:rgba(60,10,70,.5)}
+.act.skip{--c1:#9a9a9a;--c2:#3a3a3a;--ink:#2a2a2a;--fl:rgba(0,0,0,.4)}
+.act:disabled{cursor:default;opacity:.4}
+.act.sel-ok,.act.sel-bad{opacity:1} .act.sel-ok::before{outline:0} .act.sel-ok{filter:drop-shadow(0 0 .6cqw var(--ok))} .act.sel-bad{filter:drop-shadow(0 0 .6cqw var(--bad))}
+
+/* ---------- side panel ---------- */
+.prompt{margin:0 auto;font-family:var(--font-display);font-size:18px;font-weight:900;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.chip.next{background:var(--gold);color:var(--gold-ink);border-color:var(--gold);font-weight:700}
+@media (max-aspect-ratio:1/1){.prompt{order:5;margin:0;width:100%}}
+.rec{font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--muted)}
+.cat{font-family:var(--font-body);font-weight:500;font-size:12px;letter-spacing:.08em;padding:1px 9px;border-radius:999px;border:1px solid var(--gold);color:var(--gold)}
+.situ{margin:0;color:var(--muted);font-size:14px;max-width:64ch}
+.result{display:grid;gap:10px}
+.verdict{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.verdict strong{font-family:var(--font-display);font-size:22px}
+.verdict.ok strong{color:var(--ok)} .verdict.bad strong{color:var(--bad)}
+.verdict span{color:var(--muted);font-size:13px}
+.lesson{font-family:var(--font-display);font-weight:700;font-size:16px;margin:0;padding:8px 12px;border-left:3px solid var(--gold);background:rgba(242,195,91,.08);border-radius:0 8px 8px 0}
+.result p{margin:0;max-width:66ch}
+.optwrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;min-width:100%}
+th,td{text-align:left;padding:6px 14px 6px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:500;color:var(--muted);font-size:12px}
+tr.ans td:first-child{font-weight:700;color:var(--ok)} tr.pick td:first-child{color:var(--bad)}
+.tag{font-size:11px;border-radius:4px;padding:1px 6px;margin-left:6px;background:var(--ok-bg);color:var(--ok)}
+.tag.b{background:var(--bad-bg);color:var(--bad)}
+.nav{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.pos{color:var(--muted);font-size:13px}
+.btn{font:inherit;font-size:14px;border-radius:8px;padding:8px 18px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--gold-ink);font-weight:700}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:40px 20px;text-align:center;color:var(--muted)}
+.stage .empty{position:absolute;inset:30% 20% auto;border-color:rgba(255,255,255,.2);background:rgba(0,0,0,.25)}
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(3,8,15,.72);display:grid;place-items:center;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.sheet-in{width:min(760px,100%);max-height:80dvh;overflow:auto;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px}
+.sheet-h{display:flex;justify-content:space-between;align-items:center}
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.idx{display:grid;grid-template-columns:auto 1fr;gap:0 10px;align-items:center;text-align:left;font:inherit;font-size:13px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;color:var(--fg)}
+.idx[aria-current="true"]{border-color:var(--gold)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--line);grid-row:span 2}
+.dot.ok{background:var(--ok)} .dot.half{background:var(--gold)} .dot.bad{background:var(--bad)}
+.idx small{color:var(--muted);font-size:12px}
+.foot{color:var(--muted);font-size:12px;margin:0}
+@media (prefers-reduced-motion:reduce){button.tile{transition:none}.tile.dora::after{animation:none;background-position:50% 0}}
+</style>
+
+<div class="app">
+  <header>
+    <h1>雀魂错题本</h1>
+    <div class="stats"><span><b id="s-total">–</b>题</span><span><b id="s-ok">–</b>已掌握</span><span><b id="s-todo">–</b>待练</span><span><b id="s-rate">–</b>累计正确率</span></div>
+    <p class="prompt" id="prompt"></p>
+    <div class="chips"><span class="chips" id="filters" role="group" aria-label="题目范围"></span><button class="chip" type="button" id="listbtn">题目列表</button><button class="chip next" type="button" id="nextbtn">换一题</button></div>
+  </header>
+  <main class="main">
+    <section class="stage" id="stage"><div class="empty">正在读取题库…</div></section>
+  </main>
+</div>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-in" role="dialog" aria-label="全部题目">
+    <div class="sheet-h"><b>全部题目</b><button class="btn" type="button" id="closelist">关闭</button></div>
+    <div class="index" id="index"></div>
+    <p class="foot">随机抽题，没做过的、常错的题出现得更多。连续答对 2 次算掌握（绿点），只对了 1 次是黄点。练习记录存在你自己的账号里（未登录时存在当前浏览器）。快捷键：→ 或 N 下一题，Esc 收起 / 展开解析。新的错题由复盘后加入题库。牌面图来自公有领域的 riichi-mahjong-tiles。</p>
+  </div>
+</div>
+
+<script>
+const FILE={E:'Ton',S:'Nan',W:'Shaa',N:'Pei',P:'Haku',F:'Hatsu',C:'Chun'}, SUITF={m:'Man',p:'Pin',s:'Sou'};
+const NAME_SUIT={m:'万',p:'饼',s:'索'}, NAME_HON={E:'东',S:'南',W:'西',N:'北',P:'白',F:'发',C:'中'};
+const FILTERS=['全部','牌效','防守','副露','未掌握'];
+let DORA=new Set();
+function nextDora(ind){const b=base(ind), W='ESWN', D='PFC';
+  if(W.includes(b)) return W[(W.indexOf(b)+1)%4]; if(D.includes(b)) return D[(D.indexOf(b)+1)%3];
+  return (+b[0]%9+1)+b[1]}
+// 副露：被鸣的牌横放，位置表示来源（上家在左、对家居中、下家在右），与游戏一致
+function meldEl(m,cls){
+  const g=h('div','g'), ts=m.t.slice(), called=m.f?ts.pop():null;
+  const at=m.f===3?0:m.f===2?1:ts.length;
+  if(called) ts.splice(at,0,called);
+  ts.forEach((t,i)=>g.append(tile(t,cls+(called&&i===at?' rot':''))));
+  return g;
+}
+function same(k,on){document.querySelectorAll('#stage .top3d .tile[data-k="'+k+'"], #stage .info .tile[data-k="'+k+'"]').forEach(e=>e.classList.toggle('same',on))}
+let hands=[], filter='全部', curId=null, answered=null, recent=[], cardOpen=true;
+let progress={};
+try{progress=JSON.parse(localStorage.getItem('mj-cuoti-v1')||'{}')||{}}catch(e){progress={}}
+// 答题记录：登录后存进自己的私有记录（换设备也在），本地存一份兜底
+let progRef=null, saving=Promise.resolve();
+function save(){
+  try{localStorage.setItem('mj-cuoti-v1',JSON.stringify(progress))}catch(e){}
+  if(progRef){const body={items:JSON.parse(JSON.stringify(progress))}; saving=saving.then(()=>progRef.set(body)).catch(()=>{})}
+}
+// streak：连续答对次数（旧记录没有这个字段时，按最近一次对错算 1 或 0）
+const rec=id=>{const p=progress[id]||{tries:0,ok:0}; return {ok:p.ok||0, bad:(p.tries||0)-(p.ok||0), tries:p.tries||0, streak:p.streak??(p.last?1:0)}};
+const MASTER=2;
+
+const base=t=>t.replace(/r$/,'');
+function tname(t){const b=base(t); if(NAME_HON[b]) return NAME_HON[b]; return b[0]+NAME_SUIT[b[1]]+(t.endsWith('r')?'（赤）':'')}
+const h=(tag,cls,text)=>{const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e};
+function tile(t,cls='',tag='span'){
+  const el=document.createElement(tag); el.className='tile '+cls;
+  if(tag==='button') el.type='button';
+  if(t==='back'){el.classList.add('back'); return el}
+  const b=base(t), f=FILE[b] || SUITF[b[1]]+b[0]+(t.endsWith('r')?'-Dora':'');
+  el.dataset.k=b;
+  if(!cls.includes('in') && (t.endsWith('r') || DORA.has(b))) el.classList.add('dora');
+  el.style.setProperty('--img',`url("tiles/${f}.svg")`);
+  el.setAttribute('aria-label',tname(t)); el.title=tname(t);
+  return el;
+}
+
+// 连续答对 2 次才算掌握；只对 1 次是「快了」
+function status(id){const r=rec(id); return !r.tries?'':r.streak>=MASTER?'ok':r.streak?'half':'bad'}
+function pool(){return hands.filter(x=> filter==='全部' ? true : filter==='未掌握' ? status(x.id)!=='ok' : x.category===filter)}
+// 加权抽题：没做过的、错得多的、还没掌握的更容易抽到；最近做过的几题先不重复
+function weight(id){const r=rec(id); if(!r.tries) return 3; if(r.streak>=MASTER) return 1; return 2+4*r.bad/r.tries}
+function drawNext(){
+  const ids=pool().map(x=>x.id);
+  if(!ids.length){curId=null; return}
+  const keep=Math.min(2, ids.length-1), skip=recent.slice(-keep);
+  const cand=keep>0?ids.filter(id=>!skip.includes(id)):ids;
+  let x=Math.random()*cand.reduce((a,id)=>a+weight(id),0);
+  curId=cand.find(id=>(x-=weight(id))<0)||cand[cand.length-1];
+  recent=[...recent.filter(id=>id!==curId),curId].slice(-5); answered=null;
+}
+
+function renderStats(){
+  const ok=hands.filter(x=>status(x.id)==='ok').length;
+  document.getElementById('s-total').textContent=hands.length;
+  document.getElementById('s-ok').textContent=ok;
+  document.getElementById('s-todo').textContent=hands.length-ok;
+  let t=0,o=0; hands.forEach(x=>{const r=rec(x.id); t+=r.tries; o+=r.ok});
+  document.getElementById('s-rate').textContent=t?Math.round(o*100/t)+'%':'–';
+}
+function renderFilters(){
+  const box=document.getElementById('filters'); box.replaceChildren();
+  FILTERS.forEach(f=>{const b=h('button','chip',f); b.type='button'; b.setAttribute('aria-pressed',f===filter);
+    b.onclick=()=>{filter=f; drawNext(); renderAll()}; box.append(b)});
+}
+function renderIndex(){
+  const box=document.getElementById('index'); box.replaceChildren();
+  hands.forEach(x=>{
+    const b=h('button','idx'); b.type='button'; b.setAttribute('aria-current', x.id===curId);
+    b.append(h('span','dot '+status(x.id)), h('span',null,`${x.table.round}${x.table.honba?' '+x.table.honba+'本场':''} ${x.turn} · ${x.category}`), h('small',null,(()=>{const r=rec(x.id); return (r.tries?`对 ${r.ok} · 错 ${r.bad} · `:'未做 · ')+x.lesson})()));
+    b.onclick=()=>{curId=x.id; answered=null; document.getElementById('sheet').hidden=true; renderAll()};
+    box.append(b);
+  });
+}
+
+function isAns(q,t){return q.answers.some(a=>a===t||base(a)===base(t))}
+function renderStage(){
+  const st=document.getElementById('stage'), pr=document.getElementById('prompt');
+  st.replaceChildren(); pr.replaceChildren();
+  if(!hands.length){st.append(h('div','empty','题库还是空的。复盘新牌谱后，错题会加到这里。')); return}
+  const q=hands.find(x=>x.id===curId);
+  if(!q){st.append(h('div','empty','这个范围里没有题目了，都已掌握。')); return}
+  const T=q.table, isCall=q.type==='call', done=answered&&answered.id===q.id;
+  DORA=new Set(T.dora.map(nextDora));
+
+  // top-left: round wind, dora indicators, honba / kyotaku
+  const info=h('div','info'), top=h('div','top');
+  top.append(h('span','wind',T.round[0]));
+  const ts=h('div','ts'); for(let i=0;i<5;i++) ts.append(tile(T.dora[i]||'back','in')); top.append(ts);
+  const cnt=h('div','cnt'); cnt.append(h('span',null,'×'+T.honba)); const kt=h('span','kt','×'+T.kyotaku); cnt.append(kt);
+  info.append(top,cnt); st.append(info);
+
+  // table top: console, rivers, opponents
+  const t3=h('div','top3d');
+  const con=h('div','console'), mid=h('div','mid');
+  mid.append(h('div','rd',T.round), h('div','hb',`${T.honba} 本场`), h('div','left',`余 ${T.left}`));
+  con.append(mid); t3.append(con);
+  const callSeat=isCall?['自己','下家','对家','上家'].indexOf(q.callFrom):-1;
+  T.seats.forEach((s,i)=>{
+    const pv=h('div','pivot p'+i);
+    const seat=h('div','seat'+(s.oya?' oya':'')+(i===0?' me':'')); seat.append(h('span','wd',s.wind), h('span','sc',s.score)); seat.title=s.label; pv.append(seat);
+    if(s.riichi) pv.append(h('div','stick'));
+    const rv=h('div','river'); let row=null;
+    s.river.forEach((d,k)=>{
+      if(!row || (k%6===0 && k<18)){row=h('div','row'); rv.append(row)}
+      const el=tile(d.t,'rv'+(d.tg?' tg':'')+(d.r?' rot':''));
+      if(i===callSeat && k===s.river.length-1) el.classList.add('hl');
+      row.append(el);
+    });
+    pv.append(rv);
+    if(i>0){
+      const oh=h('div','ohand'), bks=h('div','bks');
+      const n=13-3*(s.melds?s.melds.length:0);
+      for(let k=0;k<n;k++) bks.append(tile('back','bk'));
+      oh.append(bks);
+      if(s.melds&&s.melds.length){const mz=h('div','mz'); s.melds.forEach(m=>mz.append(meldEl(m,'om'))); oh.append(mz)}
+      pv.append(oh);
+    }
+    t3.append(pv);
+  });
+  st.append(t3);
+
+  // own hand
+  const myrow=h('div','myrow'), hand=h('div','hand');
+  const all=[...q.hand.map((t,i)=>({t,i})), ...(q.draw?[{t:q.draw,i:'d'}]:[])];
+  let pickMarked=false;
+  // Mortal 推荐率：同一种牌只在最后一张上标一次
+  const AI=done&&q.ai?Object.fromEntries(q.ai.map(x=>[x.a,x.p])):null, aiTop=q.ai&&q.ai.length?q.ai[0].a:null;
+  // 同种牌有多张时，数字优先标在你点的那张，其次是实战切的那张，否则标最后一张
+  const lastOf={}; all.forEach(({t},n)=>lastOf[t]=n);
+  if(done && !isCall){
+    const pn=isAns(q,q.pick)?-1:all.findIndex(({t})=>base(t)===base(q.pick)); if(pn>=0) lastOf[all[pn].t]=pn;
+    const cn=all.findIndex(({i})=>i===answered.key); if(cn>=0) lastOf[all[cn].t]=cn;
+  }
+  const aiEl=(key,mark)=>{
+    const box=h('span','ai'+(key===aiTop?' top':''));
+    if(mark) box.append(h('span','mark','实战'));
+    if(AI&&key!=null){const p=AI[key]||0, bar=h('span','bar'), fill=h('i');
+      fill.style.width=(p*100).toFixed(1)+'%'; bar.append(fill);
+      box.append(h('span','pn',fmtP(p)), bar)}
+    return box;
+  };
+  all.forEach(({t,i},n)=>{
+    if(i==='d') hand.append(h('span','gap'));
+    const b=tile(t,'', isCall?'span':'button');
+    const k=base(t);
+    b.addEventListener('mouseenter',()=>same(k,true)); b.addEventListener('mouseleave',()=>same(k,false));
+    b.addEventListener('focus',()=>same(k,true)); b.addEventListener('blur',()=>same(k,false));
+    if(!isCall){
+      if(done){
+        b.setAttribute('aria-disabled','true');
+        if(answered.key===i) b.classList.add(answered.ok?'right':'wrong');
+        else if(!answered.ok && isAns(q,t)) b.classList.add('right');
+        const mk=!pickMarked && base(t)===base(q.pick) && !isAns(q,q.pick);
+        if(mk){pickMarked=true; if(answered.key!==i) b.classList.add('was')}
+        const showAi=AI&&lastOf[t]===n;
+        if(mk||showAi) b.append(aiEl(showAi?t:null, mk));
+      } else b.onclick=()=>answer(q,t,i);
+    }
+    hand.append(b);
+  });
+  myrow.append(hand);
+  const mm=h('div','mymelds'); (T.seats[0].melds||[]).forEach(m=>mm.append(meldEl(m,'my'))); myrow.append(mm);
+  st.append(myrow);
+  if(isCall){
+    const ac=h('div','actions');
+    q.choices.forEach(c=>{const b=h('button','act '+({'碰':'pon','吃':'chi','杠':'kan'}[c]||'skip')); b.type='button'; b.setAttribute('aria-label',c==='不碰'?'跳过':c);
+      b.append(h('span','fl','✿'),h('span','fl2','✿'),h('span','tx',c==='不碰'?'跳过':c));
+      if(done){b.disabled=true; if(q.answers.includes(c)) b.classList.add('sel-ok'); else if(answered.key===c) b.classList.add('sel-bad'); if(AI) b.append(aiEl(c,false))}
+      else b.onclick=()=>answer(q,c,c);
+      ac.append(b)});
+    st.append(ac);
+  }
+
+  // prompt in header, result card over the table
+  pr.append(h('span','cat',q.category), h('span',null, isCall?`${q.callFrom}打出 ${tname(q.callTile)}，碰不碰？`:`摸到 ${tname(q.draw)}，切哪张？`));
+  {const r=rec(q.id); pr.append(h('span','rec', r.tries?`本题 对 ${r.ok} · 错 ${r.bad}`:'第一次做'))}
+  document.getElementById('nextbtn').textContent=done?'下一题':'换一题';
+  if(done){
+    if(cardOpen){
+      const card=h('div','card'), head=h('div','head'), bs=h('div');
+      const fold=h('button','btn','收起'); fold.type='button'; fold.onclick=()=>{cardOpen=false; renderStage()};
+      const nx=h('button','btn primary','下一题'); nx.type='button'; nx.onclick=next;
+      bs.append(fold,nx); const r=rec(q.id); head.append(h('span','pos',`${T.round}${T.honba?' '+T.honba+'本场':''} · ${q.turn} · 本题累计 对 ${r.ok} 次 · 错 ${r.bad} 次 · ${r.streak>=MASTER?'已掌握':r.streak?'再对 1 次算掌握':'连对 2 次算掌握'}`),bs);
+      card.append(head, renderResult(q)); st.append(card);
+      nx.focus({preventScroll:true});
+    } else {
+      const mini=h('div','mini '+(answered.ok?'ok':'bad'));
+      const open=h('button','btn','查看解析'); open.type='button'; open.onclick=()=>{cardOpen=true; renderStage()};
+      const nx=h('button','btn primary','下一题'); nx.type='button'; nx.onclick=next;
+      mini.append(h('strong',null,answered.ok?'答对了':'不对'), open, nx); st.append(mini);
+      nx.focus({preventScroll:true});
+    }
+  }
+}
+const fmtP=p=>p>=.995?'99%':p<.005?(p>0?'<1%':'0%'):Math.round(p*100)+'%';
+function next(){drawNext(); renderAll()}
+function answer(q,t,key){
+  const ok=isAns(q,t);
+  const p=progress[q.id]||{tries:0,ok:0}; p.streak=ok?rec(q.id).streak+1:0; p.tries++; if(ok) p.ok++; p.last=ok; p.lastAt=new Date().toISOString(); progress[q.id]=p; save();
+  answered={id:q.id,key,ok,t}; cardOpen=true;
+  renderAll();
+}
+function renderResult(q){
+  const r=h('div','result');
+  const call=q.type==='call', nm=x=>call?(x==='不碰'?'跳过':x):tname(x);
+  const v=h('div','verdict '+(answered.ok?'ok':'bad'));
+  v.append(h('strong',null,answered.ok?'答对了':'不对'));
+  v.append(h('span',null,`你选：${nm(answered.t)}　正解：${q.answers.map(nm).join(' 或 ')}　实战：${nm(q.pick)}`+(q.ai&&q.ai.length?`　Mortal：${nm(q.ai[0].a)} ${fmtP(q.ai[0].p)}`:'')));
+  r.append(v, h('p','lesson',q.lesson));
+  if(q.ai&&q.ai.length) r.append(h('p','ai-note',(call?'按钮下方':'手牌上方')+'的数字和数据条是 Mortal 的推荐率，只作对照，解析以下面的分析为准。'));
+  if(q.situation) r.append(h('p','situ',q.situation));
+  (q.explain||[]).forEach(t=>r.append(h('p',null,t)));
+  if(q.options&&q.options.length){
+    const w=h('div','optwrap'); const tb=h('table');
+    const hasSafe=q.options.some(o=>o.safe);
+    const th=h('tr'); [call?'选择':'切牌','向听','有效牌',hasSafe?'备注':null].filter(Boolean).forEach(x=>th.append(h('th',null,x))); tb.append(th);
+    q.options.forEach(o=>{
+      const tr=h('tr'); const a=q.answers.some(x=>base(x)===base(o.cut)); const pk=base(q.pick)===base(o.cut);
+      if(a) tr.className='ans'; else if(pk) tr.className='pick';
+      const c=h('td',null,nm(o.cut)); if(a) c.append(h('span','tag','正解')); if(pk) c.append(h('span','tag b','实战'));
+      tr.append(c, h('td',null,['听牌','一向听','二向听','三向听','四向听'][o.shanten]??o.shanten), h('td',null,o.ukeire==null?'—':o.ukeire+' 枚'+(o.ukStd!=null&&o.ukStd!==o.ukeire?`（一般形 ${o.ukStd}）`:'')));
+      if(hasSafe) tr.append(h('td',null,o.safe||''));
+      tb.append(tr);
+    });
+    w.append(tb); r.append(w);
+    if(!call) r.append(h('p','ai-note','有效牌已扣除场上能看到的牌；括号里是不算七对子、只看一般形的枚数。'));
+  }
+  return r;
+}
+function renderAll(){renderStats(); renderFilters(); renderStage(); renderIndex()}
+document.getElementById('nextbtn').onclick=()=>next();
+document.getElementById('listbtn').onclick=()=>{document.getElementById('sheet').hidden=false};
+document.getElementById('closelist').onclick=()=>{document.getElementById('sheet').hidden=true};
+document.getElementById('sheet').onclick=e=>{if(e.target.id==='sheet') e.target.hidden=true};
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  const sh=document.getElementById('sheet');
+  if(e.key==='Escape'){ if(!sh.hidden){sh.hidden=true; return} if(answered&&answered.id===curId){cardOpen=!cardOpen; renderStage()} return }
+  if(!sh.hidden) return;
+  if(e.key==='ArrowRight'||e.key==='n'||e.key==='N'){e.preventDefault(); next()}
+});
+
+renderAll();
+(async()=>{
+  // 静态网页版（GitHub Pages 等）：没有 claude.ai 运行环境，题库读同目录的 hands.json，记录只存在本浏览器
+  if(!window.claude){
+    try{const r=await fetch('hands.json',{cache:'no-cache'}); hands=(await r.json()).sort((a,b)=>a.order-b.order); drawNext(); renderAll()}
+    catch(e){document.getElementById('stage').replaceChildren(h('div','empty','题库读取失败，请刷新页面重试。'))}
+    return;
+  }
+  const db=await claude.use('db');
+  if(!db){document.getElementById('stage').replaceChildren(h('div','empty','登录 claude.ai 后才能读取题库。')); return}
+  db.collection('hands').orderBy('order').onSnapshot(s=>{
+    hands=s.docs.map(d=>({id:d.id,...d.data()}));
+    if(!curId || !hands.some(x=>x.id===curId)) drawNext();
+    renderAll();
+  }, ()=>{document.getElementById('stage').replaceChildren(h('div','empty','题库读取失败，请刷新页面重试。'))});
+  const user=await claude.use('user'); const uid=user?await user.id():null;
+  if(!uid) return;
+  const ref=db.doc('data/users/'+uid+'/progress'); let first=true;
+  ref.onSnapshot(d=>{
+    if(d.exists){
+      const items=(d.data()||{}).items||{};
+      // 合并：同一题取作答次数多的那份
+      for(const [k,v] of Object.entries(items)) if(!progress[k] || (v.tries||0)>=(progress[k].tries||0)) progress[k]=v;
+    }
+    if(first){first=false; progRef=ref; if(!d.exists && Object.keys(progress).length) save()}
+    try{localStorage.setItem('mj-cuoti-v1',JSON.stringify(progress))}catch(e){}
+    renderStats(); renderIndex();
+  }, ()=>{});
+})();
+</script>

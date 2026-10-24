@@ -4,7 +4,7 @@
 
 questions.json 每题只写人工判断的部分：
   id, date, category(牌效/防守/副露), type(discard/call), src, answers, lesson, explain, situation
-  可选: notes {牌: 备注}（选项表备注列）, threat [座位]（没有立直时也按这些人算现物/生张，如 ["上家"]）
+  可选: added（加入题库的日期，默认等于 date）, notes {牌: 备注}（选项表备注列）, threat [座位]（没有立直时也按这些人算现物/生张，如 ["上家"]）
   副露题另写: choices, options（碰/不碰两行的向听、有效牌、备注）
 src: {"kyoku":"E1-1","discard":5}（第 5 次切牌前）或 {"kyoku":"E4-1","call":true,"n":1}（第 1 次副露前）
 
@@ -161,7 +161,7 @@ for i,q in enumerate(qs):
         st=snapshot(rep,q['src'],q.get('date'))
         if st: break
     else: raise SystemExit(f"{q['id']}: 在报告里找不到 {q['src']}")
-    o=build(q,rep,st); o['order']=i+1; out.append(o)
+    o=build(q,rep,st); o['order']=i+1; o.setdefault('added',q['date']); out.append(o)
     print(o['id'],o['turn'],'实战',o['pick'],'|',' '.join(f"{r['cut']}:{r['shanten']}向{r['ukeire']}/{r.get('ukStd')}" for r in o.get('options',[])))
 json.dump(out,open(out_path,'w',encoding='utf-8'),ensure_ascii=False,indent=1)
 os.makedirs(seed_dir,exist_ok=True)

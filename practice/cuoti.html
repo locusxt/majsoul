@@ -189,10 +189,14 @@ tr.ans td:first-child{font-weight:700;color:var(--ok)} tr.pick td:first-child{co
   padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
 .sheet-in{width:min(760px,100%);max-height:80dvh;overflow:auto;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px}
 .sheet-h{display:flex;justify-content:space-between;align-items:center}
-.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
-.idx{display:grid;grid-template-columns:auto 1fr;gap:0 10px;align-items:center;text-align:left;font:inherit;font-size:13px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;color:var(--fg)}
-.idx[aria-current="true"]{border-color:var(--gold)}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--line);grid-row:span 2}
+.index{width:100%;border-collapse:collapse;font-size:13px}
+.index th{position:sticky;top:-16px;background:var(--panel2);color:var(--muted);font-weight:500;font-size:12px;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.index td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.index tbody tr{cursor:pointer}
+.index tbody tr:hover,.index tbody tr:focus-visible{background:var(--panel);outline:none}
+.index tr[aria-current="true"] td{color:var(--gold)}
+.index .num{font-variant-numeric:tabular-nums;color:var(--muted)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--line)}
 .dot.ok{background:var(--ok)} .dot.half{background:var(--gold)} .dot.bad{background:var(--bad)}
 .idx small{color:var(--muted);font-size:12px}
 .foot{color:var(--muted);font-size:12px;margin:0}
@@ -213,8 +217,8 @@ tr.ans td:first-child{font-weight:700;color:var(--ok)} tr.pick td:first-child{co
 <div class="sheet" id="sheet" hidden>
   <div class="sheet-in" role="dialog" aria-label="全部题目">
     <div class="sheet-h"><b>全部题目</b><button class="btn" type="button" id="closelist">关闭</button></div>
-    <div class="index" id="index"></div>
-    <p class="foot">随机抽题，没做过的、常错的题出现得更多。连续答对 2 次算掌握（绿点），只对了 1 次是黄点。练习记录存在你自己的账号里（未登录时存在当前浏览器）。快捷键：→ 或 N 下一题，Esc 收起 / 展开解析。新的错题由复盘后加入题库。牌面图来自公有领域的 riichi-mahjong-tiles。</p>
+    <table class="index"><thead><tr><th></th><th>加入时间</th><th>题目</th><th>记录</th><th>上次做</th></tr></thead><tbody id="index"></tbody></table>
+    <p class="foot">随机抽题，没做过的、常错的题出现得更多。列表里不显示题目类型和教训，以免提前看到答案。连续答对 2 次算掌握（绿点），只对了 1 次是黄点。练习记录存在你自己的账号里（未登录时存在当前浏览器）。快捷键：→ 或 N 下一题，Esc 收起 / 展开解析。新的错题由复盘后加入题库。牌面图来自公有领域的 riichi-mahjong-tiles。</p>
   </div>
 </div>
 
@@ -293,11 +297,19 @@ function renderFilters(){
 }
 function renderIndex(){
   const box=document.getElementById('index'); box.replaceChildren();
-  hands.forEach(x=>{
-    const b=h('button','idx'); b.type='button'; b.setAttribute('aria-current', x.id===curId);
-    b.append(h('span','dot '+status(x.id)), h('span',null,`${x.table.round}${x.table.honba?' '+x.table.honba+'本场':''} ${x.turn} · ${x.category}`), h('small',null,(()=>{const r=rec(x.id); return (r.tries?`对 ${r.ok} · 错 ${r.bad} · `:'未做 · ')+x.lesson})()));
-    b.onclick=()=>{curId=x.id; answered=null; document.getElementById('sheet').hidden=true; renderAll()};
-    box.append(b);
+  const md=d=>d?d.slice(5).replace('-','/'):'–';
+  [...hands].sort((a,b)=>(b.added||b.date).localeCompare(a.added||a.date)||b.order-a.order).forEach(x=>{
+    const r=rec(x.id), lastAt=(progress[x.id]||{}).lastAt;
+    const tr=h('tr'); tr.tabIndex=0; tr.setAttribute('aria-current', x.id===curId);
+    const td=(c,t)=>{const e=h('td',c,t); tr.append(e); return e};
+    td().append(h('span','dot '+status(x.id)));
+    td('num',md(x.added||x.date));
+    td(null,`${x.table.round}${x.table.honba?' '+x.table.honba+'本场':''} ${x.turn}`);
+    td('num',r.tries?`对 ${r.ok} · 错 ${r.bad}`:'未做');
+    td('num',lastAt?md(lastAt.slice(0,10)):'–');
+    const go=()=>{curId=x.id; answered=null; document.getElementById('sheet').hidden=true; renderAll()};
+    tr.onclick=go; tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); go()}};
+    box.append(tr);
   });
 }
 
@@ -401,7 +413,8 @@ function renderStage(){
   }
 
   // prompt in header, result card over the table
-  pr.append(h('span','cat',q.category), h('span',null, isCall?`${q.callFrom}打出 ${tname(q.callTile)}，碰不碰？`:`摸到 ${tname(q.draw)}，切哪张？`));
+  if(done) pr.append(h('span','cat',q.category));
+  pr.append(h('span',null, isCall?`${q.callFrom}打出 ${tname(q.callTile)}，碰不碰？`:`摸到 ${tname(q.draw)}，切哪张？`));
   {const r=rec(q.id); pr.append(h('span','rec', r.tries?`本题 对 ${r.ok} · 错 ${r.bad}`:'第一次做'))}
   document.getElementById('nextbtn').textContent=done?'下一题':'换一题';
   if(done){

@@ -29,7 +29,7 @@ def snapshot(rep,key,date):
             k=f"{ev['bakaze']}{ev['kyoku']}-{ev['honba']}"
             st=dict(k=k,me=me,oya=ev['oya'],bakaze=ev['bakaze'],kyoku=ev['kyoku'],honba=ev['honba'],kyotaku=ev['kyotaku'],
                     scores=list(ev['scores']),dora=[ev['dora_marker']],left=70,river=[[] for _ in range(4)],all_disc=[[] for _ in range(4)],
-                    melds=[[] for _ in range(4)],reach=[False]*4,pend=[False]*4,nd=0,nc=0,hand=list(ev['tehais'][me]),draw=None)
+                    melds=[[] for _ in range(4)],reach=[False]*4,after=[None]*4,pend=[False]*4,nd=0,nc=0,hand=list(ev['tehais'][me]),draw=None)
             continue
         if st is None or st['k']!=key['kyoku']: continue
         if t=='dahai' and ev['actor']==me and 'discard' in key and st['nd']+1==key['discard']:
@@ -40,12 +40,14 @@ def snapshot(rep,key,date):
             st['left']-=1
             if ev['actor']==me: st['hand'].append(ev['pai']); st['draw']=ev['pai']
         elif t=='dora': st['dora'].append(ev['dora_marker'])
-        elif t=='reach': st['pend'][ev['actor']]=True
+        elif t=='reach': st['pend'][ev['actor']]=True; st['after'][ev['actor']]=set()
         elif t=='reach_accepted':
             a=ev['actor']; st['reach'][a]=True; st['scores'][a]-=1000; st['kyotaku']+=1
         elif t=='dahai':
             a=ev['actor']; st['river'][a].append({'t':ev['pai'],'tg':ev['tsumogiri'],'r':st['pend'][a]}); st['pend'][a]=False
             st['all_disc'][a].append(norm(ev['pai']))
+            for p in range(4):   # 立直后任何人打出、立直家没和的牌也是现物（见逃振听）
+                if st['after'][p] is not None: st['after'][p].add(norm(ev['pai']))
             if a==me: st['nd']+=1; st['hand'].remove(ev['pai']); st['draw']=None
         elif t in('chi','pon','daiminkan','ankan','kakan'):
             a=ev['actor']
@@ -118,7 +120,7 @@ def build(q,rep,st):
         for b in sorted({norm(t) for t in full},key=idx):
             c[idx(b)]-=1; s,u,ss,us=ukeire2(c,nf,vis); c[idx(b)]+=1
             row={'cut':b,'shanten':s,'ukeire':u,'ukStd':us if ss==s else None}
-            if threats: row['safe']='现物' if all(b in st['all_disc'][p] for p in threats) else '生张'
+            if threats: row['safe']='现物' if all(b in st['all_disc'][p] or (st['after'][p] and b in st['after'][p]) for p in threats) else '生张'
             note=q.get('notes',{}).get(b)
             if note: row['safe']=(row.get('safe','')+'，' if row.get('safe') else '')+note
             rows.append(row)

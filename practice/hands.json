@@ -3472,5 +3472,1363 @@
   ],
   "order": 12,
   "added": "2026-10-25"
+ },
+ {
+  "id": "20261026-E1-0-8",
+  "date": "2026-10-26",
+  "category": "牌效",
+  "type": "discard",
+  "situation": "东1局，下家是亲家，没人立直。你一向听，摸到 5m 凑成对子。",
+  "answers": [
+   "7m"
+  ],
+  "lesson": "两面搭子比嵌张值钱，孤张该切就切",
+  "explain": [
+   "摸 5m 后手牌是 55m 7m 456p 68p 234455s，一向听，要在 7m 和索子里选一张切。",
+   "切 7m：55m 当雀头，索子 234s + 45s 留一个两面，加上 68p 嵌张，一向听 13 枚。",
+   "你切的 4s：索子变成 234s + 55s，万子留 57m 嵌张，变成 57m、68p 两个嵌张加 55m、55s 对碰，只剩 11 枚。",
+   "7m 和 55m 只能凑嵌张，而 4s 是两面的一部分。两面比嵌张好，所以切 7m。"
+  ],
+  "src": {
+   "kyoku": "E1-0",
+   "discard": 8
+  },
+  "table": {
+   "round": "东1局",
+   "honba": 0,
+   "kyotaku": 0,
+   "left": 37,
+   "dora": [
+    "S",
+    "9p"
+   ],
+   "seats": [
+    {
+     "label": "自己",
+     "wind": "北",
+     "score": 25000,
+     "river": [
+      {
+       "t": "E",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "W",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "8p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "E",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "1m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "2m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1s",
+       "tg": false,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    },
+    {
+     "label": "下家",
+     "wind": "东",
+     "score": 25000,
+     "river": [
+      {
+       "t": "S",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "P",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "8p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "S",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "N",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1p",
+       "tg": true,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": true
+    },
+    {
+     "label": "对家",
+     "wind": "南",
+     "score": 25000,
+     "river": [
+      {
+       "t": "E",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "N",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "P",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "C",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "7p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "4p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "2p",
+       "tg": true,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    },
+    {
+     "label": "上家",
+     "wind": "西",
+     "score": 25000,
+     "river": [
+      {
+       "t": "S",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "8m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "6p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "P",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "6s",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "C",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "8m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "1s",
+       "tg": true,
+       "r": false
+      }
+     ],
+     "melds": [
+      {
+       "t": [
+        "F",
+        "F",
+        "F",
+        "F"
+       ],
+       "f": 0
+      }
+     ],
+     "riichi": false,
+     "oya": false
+    }
+   ]
+  },
+  "hand": [
+   "5m",
+   "7m",
+   "4p",
+   "5p",
+   "6p",
+   "6p",
+   "8p",
+   "2s",
+   "3s",
+   "4s",
+   "4s",
+   "5s",
+   "5s"
+  ],
+  "draw": "5m",
+  "pick": "4s",
+  "turn": "第8打",
+  "options": [
+   {
+    "cut": "7m",
+    "shanten": 1,
+    "ukeire": 13,
+    "ukStd": 13
+   },
+   {
+    "cut": "4s",
+    "shanten": 1,
+    "ukeire": 11,
+    "ukStd": 11
+   },
+   {
+    "cut": "2s",
+    "shanten": 1,
+    "ukeire": 9,
+    "ukStd": 9
+   }
+  ],
+  "ai": [
+   {
+    "a": "7m",
+    "p": 0.998
+   },
+   {
+    "a": "2s",
+    "p": 0.002
+   },
+   {
+    "a": "5s",
+    "p": 0.0
+   },
+   {
+    "a": "5m",
+    "p": 0.0
+   },
+   {
+    "a": "8p",
+    "p": 0.0
+   },
+   {
+    "a": "4s",
+    "p": 0.0
+   },
+   {
+    "a": "6p",
+    "p": 0.0
+   },
+   {
+    "a": "5p",
+    "p": 0.0
+   },
+   {
+    "a": "4p",
+    "p": 0.0
+   },
+   {
+    "a": "3s",
+    "p": 0.0
+   }
+  ],
+  "order": 13,
+  "added": "2026-10-26"
+ },
+ {
+  "id": "20261026-E2-0-3",
+  "date": "2026-10-26",
+  "category": "牌效",
+  "type": "discard",
+  "situation": "东2局，对家是亲家，宝牌是 1m。你一向听，手里 1m 和 1s 都是孤张。",
+  "answers": [
+   "1s"
+  ],
+  "lesson": "进张一样时，留宝牌",
+  "explain": [
+   "手牌 1m 333m 46m 12p 1s 22345s，已经一向听，1m 和 1s 都是多余的孤张。",
+   "切 1s 还是切 1m，都是一向听 8 枚（等 5m、3p），牌效完全一样。",
+   "但宝牌指示牌是 9m，1m 就是宝牌。之后摸到 1m 能凑对子当雀头，摸到 2m 能凑 123m，留着它多一番。",
+   "牌效相同时，先切不值钱的那张，所以切 1s。"
+  ],
+  "src": {
+   "kyoku": "E2-0",
+   "discard": 3
+  },
+  "table": {
+   "round": "东2局",
+   "honba": 0,
+   "kyotaku": 0,
+   "left": 58,
+   "dora": [
+    "9m"
+   ],
+   "seats": [
+    {
+     "label": "自己",
+     "wind": "西",
+     "score": 25000,
+     "river": [
+      {
+       "t": "9m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "C",
+       "tg": false,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    },
+    {
+     "label": "下家",
+     "wind": "北",
+     "score": 17300,
+     "river": [
+      {
+       "t": "S",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "F",
+       "tg": false,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    },
+    {
+     "label": "对家",
+     "wind": "东",
+     "score": 25000,
+     "river": [
+      {
+       "t": "9m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "4s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "6m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "7m",
+       "tg": false,
+       "r": false
+      }
+     ],
+     "melds": [
+      {
+       "t": [
+        "E",
+        "E",
+        "E"
+       ],
+       "f": 1
+      }
+     ],
+     "riichi": false,
+     "oya": true
+    },
+    {
+     "label": "上家",
+     "wind": "南",
+     "score": 32700,
+     "river": [
+      {
+       "t": "C",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "9s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "8s",
+       "tg": true,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    }
+   ]
+  },
+  "hand": [
+   "1m",
+   "3m",
+   "3m",
+   "3m",
+   "4m",
+   "6m",
+   "1p",
+   "2p",
+   "1s",
+   "2s",
+   "2s",
+   "3s",
+   "5s"
+  ],
+  "draw": "4s",
+  "pick": "1m",
+  "turn": "第3打",
+  "options": [
+   {
+    "cut": "1s",
+    "shanten": 1,
+    "ukeire": 8,
+    "ukStd": 8
+   },
+   {
+    "cut": "1m",
+    "shanten": 1,
+    "ukeire": 8,
+    "ukStd": 8
+   },
+   {
+    "cut": "4m",
+    "shanten": 2,
+    "ukeire": null,
+    "ukStd": null
+   }
+  ],
+  "ai": [
+   {
+    "a": "1s",
+    "p": 0.3706
+   },
+   {
+    "a": "2s",
+    "p": 0.3404
+   },
+   {
+    "a": "6m",
+    "p": 0.175
+   },
+   {
+    "a": "1p",
+    "p": 0.0644
+   },
+   {
+    "a": "1m",
+    "p": 0.0484
+   },
+   {
+    "a": "2p",
+    "p": 0.001
+   },
+   {
+    "a": "4m",
+    "p": 0.0001
+   },
+   {
+    "a": "3m",
+    "p": 0.0
+   },
+   {
+    "a": "4s",
+    "p": 0.0
+   },
+   {
+    "a": "5s",
+    "p": 0.0
+   },
+   {
+    "a": "3s",
+    "p": 0.0
+   }
+  ],
+  "order": 14,
+  "added": "2026-10-26"
+ },
+ {
+  "id": "20261026-E2-0-9",
+  "date": "2026-10-26",
+  "category": "牌效",
+  "type": "discard",
+  "situation": "东2局，对家是亲家，没人立直。你一向听，摸到 4p。",
+  "answers": [
+   "1p",
+   "4p"
+  ],
+  "lesson": "两个搭子等同一张牌时，多出来的那张才是废牌",
+  "explain": [
+   "摸 4p 后手牌 23334m 124p 122345s，一向听。",
+   "筒子 124p 里，12p 等 3p，24p 也等 3p，两种拆法等的是同一张牌，所以 1p 和 4p 只需要留一张。切 1p 或 4p 都是一向听 13 枚。",
+   "你切的 2s 是对子的一张。33m 和 22s 两个对子能互相当雀头候补，摸到 3m 或 2s 都能前进；拆了 2s 就只剩 10 枚。",
+   "先找「留着也不会多收进张」的牌，这里是 1p 或 4p，不是对子。"
+  ],
+  "src": {
+   "kyoku": "E2-0",
+   "discard": 9
+  },
+  "table": {
+   "round": "东2局",
+   "honba": 0,
+   "kyotaku": 0,
+   "left": 35,
+   "dora": [
+    "9m"
+   ],
+   "seats": [
+    {
+     "label": "自己",
+     "wind": "西",
+     "score": 25000,
+     "river": [
+      {
+       "t": "9m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "C",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "8s",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "N",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "C",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "6m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "F",
+       "tg": true,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    },
+    {
+     "label": "下家",
+     "wind": "北",
+     "score": 17300,
+     "river": [
+      {
+       "t": "S",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "F",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "8s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "5s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "3s",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "2m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "7m",
+       "tg": false,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    },
+    {
+     "label": "对家",
+     "wind": "东",
+     "score": 25000,
+     "river": [
+      {
+       "t": "9m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "4s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "6m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "7m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "P",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "4m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "1s",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "1p",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "2p",
+       "tg": false,
+       "r": false
+      }
+     ],
+     "melds": [
+      {
+       "t": [
+        "E",
+        "E",
+        "E"
+       ],
+       "f": 1
+      },
+      {
+       "t": [
+        "N",
+        "N",
+        "N"
+       ],
+       "f": 3
+      }
+     ],
+     "riichi": false,
+     "oya": true
+    },
+    {
+     "label": "上家",
+     "wind": "南",
+     "score": 32700,
+     "river": [
+      {
+       "t": "C",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "9s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "8s",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "S",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "F",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "1m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "F",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "C",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "1s",
+       "tg": false,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    }
+   ]
+  },
+  "hand": [
+   "2m",
+   "3m",
+   "3m",
+   "3m",
+   "4m",
+   "1p",
+   "2p",
+   "1s",
+   "2s",
+   "2s",
+   "3s",
+   "4s",
+   "5s"
+  ],
+  "draw": "4p",
+  "pick": "2s",
+  "turn": "第9打",
+  "options": [
+   {
+    "cut": "1p",
+    "shanten": 1,
+    "ukeire": 13,
+    "ukStd": 13
+   },
+   {
+    "cut": "4p",
+    "shanten": 1,
+    "ukeire": 13,
+    "ukStd": 13
+   },
+   {
+    "cut": "2s",
+    "shanten": 1,
+    "ukeire": 10,
+    "ukStd": 10
+   }
+  ],
+  "ai": [
+   {
+    "a": "1p",
+    "p": 1.0
+   },
+   {
+    "a": "1s",
+    "p": 0.0
+   },
+   {
+    "a": "2m",
+    "p": 0.0
+   },
+   {
+    "a": "2s",
+    "p": 0.0
+   },
+   {
+    "a": "2p",
+    "p": 0.0
+   },
+   {
+    "a": "3m",
+    "p": 0.0
+   },
+   {
+    "a": "5s",
+    "p": 0.0
+   },
+   {
+    "a": "4m",
+    "p": 0.0
+   },
+   {
+    "a": "4s",
+    "p": 0.0
+   },
+   {
+    "a": "4p",
+    "p": 0.0
+   },
+   {
+    "a": "3s",
+    "p": 0.0
+   }
+  ],
+  "order": 15,
+  "added": "2026-10-26"
+ },
+ {
+  "id": "20261026-E2-1-16",
+  "date": "2026-10-26",
+  "category": "防守",
+  "type": "discard",
+  "situation": "东2局 1 本场，上家先立直，对家（亲家）追立直，两家都立直了。你做七对子，已经在弃牌。",
+  "answers": [
+   "N"
+  ],
+  "lesson": "两家立直时先找两家共同的现物；它正好没用，就不要再犹豫",
+  "explain": [
+   "摸 7p 后手里有 55m 88m 77p 33s 88s 五个对子，七对子一向听，单张是 4m 4p 5s N。",
+   "N 两家都打过，对两家都是现物；切掉它还保持一向听，剩 4m 4p 5s 三张等，有效牌 8 枚，是所有选项里最多的。",
+   "你切的 8m 只是对家的现物，对上家是生张，而且拆了 88m 对子，退回二向听。安全和牌效两头都亏。",
+   "这是第 3 次「有现物不打，改打生张」。两家立直时，先看哪张牌两家都打过。"
+  ],
+  "src": {
+   "kyoku": "E2-1",
+   "discard": 16
+  },
+  "table": {
+   "round": "东2局",
+   "honba": 1,
+   "kyotaku": 2,
+   "left": 7,
+   "dora": [
+    "5p"
+   ],
+   "seats": [
+    {
+     "label": "自己",
+     "wind": "西",
+     "score": 26500,
+     "river": [
+      {
+       "t": "E",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "W",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "8p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "3s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "1s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "6m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "E",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "9s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "7m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "3p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "2p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "2p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "F",
+       "tg": false,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    },
+    {
+     "label": "下家",
+     "wind": "北",
+     "score": 15800,
+     "river": [
+      {
+       "t": "E",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "S",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "N",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "S",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "9m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "4p",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "W",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "9m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "1s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "4s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "9s",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "P",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "P",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "F",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "7s",
+       "tg": false,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": false,
+     "oya": false
+    },
+    {
+     "label": "对家",
+     "wind": "东",
+     "score": 25500,
+     "river": [
+      {
+       "t": "1s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "9s",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "S",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "N",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "1p",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "4s",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "8m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "6m",
+       "tg": false,
+       "r": true
+      },
+      {
+       "t": "1m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "7m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "3m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "3p",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "2p",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "6m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "S",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "8m",
+       "tg": true,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": true,
+     "oya": true
+    },
+    {
+     "label": "上家",
+     "wind": "南",
+     "score": 30200,
+     "river": [
+      {
+       "t": "W",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "9m",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "F",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "P",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "1s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "P",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "8p",
+       "tg": false,
+       "r": true
+      },
+      {
+       "t": "E",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "N",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "6m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "9p",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "2p",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "3m",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "7s",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "3p",
+       "tg": true,
+       "r": false
+      },
+      {
+       "t": "9p",
+       "tg": true,
+       "r": false
+      }
+     ],
+     "melds": [],
+     "riichi": true,
+     "oya": false
+    }
+   ]
+  },
+  "hand": [
+   "4m",
+   "5m",
+   "5m",
+   "8m",
+   "8m",
+   "4p",
+   "7p",
+   "3s",
+   "3s",
+   "5s",
+   "8s",
+   "8s",
+   "N"
+  ],
+  "draw": "7p",
+  "pick": "8m",
+  "turn": "第16打",
+  "options": [
+   {
+    "cut": "N",
+    "shanten": 1,
+    "ukeire": 8,
+    "ukStd": null,
+    "safe": "现物"
+   },
+   {
+    "cut": "4p",
+    "shanten": 1,
+    "ukeire": 6,
+    "ukStd": null,
+    "safe": "生张"
+   },
+   {
+    "cut": "4m",
+    "shanten": 1,
+    "ukeire": 5,
+    "ukStd": null,
+    "safe": "生张"
+   },
+   {
+    "cut": "8m",
+    "shanten": 2,
+    "ukeire": null,
+    "ukStd": null,
+    "safe": "生张"
+   }
+  ],
+  "ai": [
+   {
+    "a": "N",
+    "p": 0.9962
+   },
+   {
+    "a": "8m",
+    "p": 0.0038
+   },
+   {
+    "a": "5m",
+    "p": 0.0
+   },
+   {
+    "a": "3s",
+    "p": 0.0
+   },
+   {
+    "a": "8s",
+    "p": 0.0
+   },
+   {
+    "a": "4m",
+    "p": 0.0
+   },
+   {
+    "a": "4p",
+    "p": 0.0
+   },
+   {
+    "a": "5s",
+    "p": 0.0
+   },
+   {
+    "a": "7p",
+    "p": 0.0
+   }
+  ],
+  "order": 16,
+  "added": "2026-10-26"
  }
 ]

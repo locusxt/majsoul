@@ -3,10 +3,12 @@
 报告文件名以对局日期开头，题目按 date 找同一天的报告。
 
 questions.json 每题只写人工判断的部分：
-  id, date, category(牌效/防守/副露), type(discard/call), src, answers, lesson, explain, situation
+  id, date, category(牌效/防守/副露), type(discard/call/riichi), src, answers, lesson, explain, situation
   可选: added（加入题库的日期，默认等于 date）, notes {牌: 备注}（选项表备注列）, threat [座位]（没有立直时也按这些人算现物/生张，如 ["上家"]）
-  副露题另写: choices, options（碰/不碰两行的向听、有效牌、备注）
-src: {"kyoku":"E1-1","discard":5}（第 5 次切牌前）或 {"kyoku":"E4-1","call":true,"n":1}（第 1 次副露前）
+  副露题另写: choices（如 ["吃","不碰"]，"不碰"显示为跳过）, options（各选择的向听、有效牌、备注，cut 填选择名）
+  立直题（听牌时立不立）: choices ["立直","不立直"], options 同上；src 用 discard，实战按当时有没有宣言立直判定
+src: {"kyoku":"E1-1","discard":5}（第 5 次切牌前）、{"kyoku":"E4-1","call":true,"n":1}（第 1 次副露前）
+     或 {"kyoku":"E1-1","pass":{"tile":"8s","n":1}}（别家第 1 次打出 8s、你没鸣的时候）
 
 自动生成：手牌、摸牌、实战、巡目、选项表（向听、有效牌含七对子 / 只算一般形、现物或生张）、
 牌桌（四家牌河、副露、点数、余牌、宝牌）、Mortal 推荐率 ai。
@@ -29,9 +31,12 @@ def snapshot(rep,key,date):
             k=f"{ev['bakaze']}{ev['kyoku']}-{ev['honba']}"
             st=dict(k=k,me=me,oya=ev['oya'],bakaze=ev['bakaze'],kyoku=ev['kyoku'],honba=ev['honba'],kyotaku=ev['kyotaku'],
                     scores=list(ev['scores']),dora=[ev['dora_marker']],left=70,river=[[] for _ in range(4)],all_disc=[[] for _ in range(4)],
-                    melds=[[] for _ in range(4)],reach=[False]*4,after=[None]*4,pend=[False]*4,nd=0,nc=0,hand=list(ev['tehais'][me]),draw=None)
+                    melds=[[] for _ in range(4)],reach=[False]*4,after=[None]*4,pend=[False]*4,nd=0,nc=0,np=0,hand=list(ev['tehais'][me]),draw=None)
             continue
         if st is None or st['k']!=key['kyoku']: continue
+        if t=='dahai' and ev['actor']!=me and 'pass' in key and norm(ev['pai'])==norm(key['pass']['tile']):
+            st['np']+=1
+            if st['np']==key['pass'].get('n',1): st['act']=ev; return st
         if t=='dahai' and ev['actor']==me and 'discard' in key and st['nd']+1==key['discard']:
             st['act']=ev; return st
         if t in('chi','pon','daiminkan') and ev['actor']==me and key.get('call') and st['nc']+1==key.get('n',1):
@@ -98,9 +103,14 @@ def build(q,rep,st):
     o=dict(q); o['table']=table
     if q['type']=='call':
         o['hand']=hand; o['draw']=None
-        o['callTile']=act['pai']; o['callFrom']=LABEL[(act['target']-me)%4]
-        o['pick']={'pon':'碰','chi':'吃','daiminkan':'杠'}[act['type']]
+        o['callTile']=act['pai']; o['callFrom']=LABEL[((act['actor'] if act['type']=='dahai' else act['target'])-me)%4]
+        o['pick']={'pon':'碰','chi':'吃','daiminkan':'杠','dahai':'不碰'}[act['type']]
         o['turn']=f"第{st['nd']+1}巡"
+    elif q['type']=='riichi':
+        d=st['draw']
+        if d: hand.remove(d)
+        o['hand']=hand; o['draw']=d; o['pick']='立直' if st['pend'][me] else '不立直'; o['turn']=f"第{st['nd']+1}打"
+        o['riichiTile']=act['pai']
     else:
         d=st['draw']
         if d: hand.remove(d)
@@ -136,14 +146,18 @@ def build(q,rep,st):
     # Mortal 推荐率
     want=Counter(st['hand']); entries=[e for k in rep['review']['kyokus'] for e in k['entries']]
     es=[e for e in entries if Counter(e['state']['tehai'])==want and
-        (any(x['action']['type'] in('pon','chi','daiminkan') for x in e['details']) and e['tile']==act['pai'] if q['type']=='call' else e['actual']['type']=='dahai')]
+        (any(x['action']['type'] in('pon','chi','daiminkan') for x in e['details']) and e['tile']==act['pai'] if q['type']=='call'
+         else e['actual']['type'] in('dahai','reach') if q['type']=='riichi' else e['actual']['type']=='dahai')]
     if len(es)>1 and q['type']!='call':   # 同一手牌出现多次（如摸切同一张），用摸到的牌区分
         es=[e for e in es if e['tile']==st['draw']] or es
+    if len(es)>1 and q['type']=='riichi':
+        es=[e for e in es if (e['actual']['type']=='reach')==(o['pick']=='立直')] or es
     if len(es)==1:
         acc={}
         for x in es[0]['details']:
             a=x['action']; t=a['type']
-            k=a['pai'] if t=='dahai' else {'pon':'碰','chi':'吃','daiminkan':'杠','none':'不碰','reach':'立直'}.get(t,t)
+            if q['type']=='riichi': k='立直' if t=='reach' else '不立直'
+            else: k=a['pai'] if t=='dahai' else {'pon':'碰','chi':'吃','daiminkan':'杠','none':'不碰','reach':'立直'}.get(t,t)
             acc[k]=acc.get(k,0)+x['prob']
         o['ai']=[{'a':k,'p':round(v,4)} for k,v in sorted(acc.items(),key=lambda x:-x[1])]
     else: print(f"  ! {q['id']}: Mortal 记录匹配到 {len(es)} 条，跳过推荐率")

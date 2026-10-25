@@ -159,6 +159,7 @@ button.tile[aria-disabled]{cursor:default}
 .act.pon{--c1:#22b4e6;--c2:#0a4f8f;--ink:#06375c;--fl:rgba(4,40,80,.55)}
 .act.chi{--c1:#36bf86;--c2:#0f5c40;--ink:#0a3f2c;--fl:rgba(5,50,30,.55)}
 .act.kan{--c1:#d257d6;--c2:#6b2687;--ink:#4a1260;--fl:rgba(60,10,70,.5)}
+.act.riichi{--c1:#f0a63a;--c2:#9a4a0c;--ink:#5a2a04;--fl:rgba(80,30,0,.5)}
 .act.skip{--c1:#9a9a9a;--c2:#3a3a3a;--ink:#2a2a2a;--fl:rgba(0,0,0,.4)}
 .act:disabled{cursor:default;opacity:.4}
 .act.sel-ok,.act.sel-bad{opacity:1} .act.sel-ok::before{outline:0} .act.sel-ok{filter:drop-shadow(0 0 .6cqw var(--ok))} .act.sel-bad{filter:drop-shadow(0 0 .6cqw var(--bad))}
@@ -231,7 +232,7 @@ tr.ans td:first-child{font-weight:700;color:var(--ok)} tr.pick td:first-child{co
 <script>
 const FILE={E:'Ton',S:'Nan',W:'Shaa',N:'Pei',P:'Haku',F:'Hatsu',C:'Chun'}, SUITF={m:'Man',p:'Pin',s:'Sou'};
 const NAME_SUIT={m:'万',p:'饼',s:'索'}, NAME_HON={E:'东',S:'南',W:'西',N:'北',P:'白',F:'发',C:'中'};
-const FILTERS=['全部','牌效','防守','副露','未掌握'];
+const FILTERS=['全部','牌效','防守','副露','立直','未掌握'];
 let DORA=new Set();
 function nextDora(ind){const b=base(ind), W='ESWN', D='PFC';
   if(W.includes(b)) return W[(W.indexOf(b)+1)%4]; if(D.includes(b)) return D[(D.indexOf(b)+1)%3];
@@ -352,7 +353,7 @@ function renderStage(){
   if(!hands.length){st.append(h('div','empty','题库还是空的。复盘新牌谱后，错题会加到这里。')); return}
   const q=view(hands.find(x=>x.id===curId));
   if(!q){st.append(h('div','empty','这个范围里没有题目了，都已掌握。')); return}
-  const T=q.table, isCall=q.type==='call', done=answered&&answered.id===q.id;
+  const T=q.table, isCall=q.type!=='discard', done=answered&&answered.id===q.id;
   DORA=new Set(T.dora.map(nextDora));
 
   // top-left: round wind, dora indicators, honba / kyotaku
@@ -436,7 +437,7 @@ function renderStage(){
   st.append(myrow);
   if(isCall){
     const ac=h('div','actions');
-    q.choices.forEach(c=>{const b=h('button','act '+({'碰':'pon','吃':'chi','杠':'kan'}[c]||'skip')); b.type='button'; b.setAttribute('aria-label',c==='不碰'?'跳过':c);
+    q.choices.forEach(c=>{const b=h('button','act '+({'碰':'pon','吃':'chi','杠':'kan','立直':'riichi'}[c]||'skip')); b.type='button'; b.setAttribute('aria-label',c==='不碰'?'跳过':c);
       b.append(h('span','fl','✿'),h('span','fl2','✿'),h('span','tx',c==='不碰'?'跳过':c));
       if(done){b.disabled=true; if(q.answers.includes(c)) b.classList.add('sel-ok'); else if(answered.key===c) b.classList.add('sel-bad'); if(AI) b.append(aiEl(c,false))}
       else {b.dataset.key=c; b.onclick=e=>choose(e,q,c,c)}
@@ -448,7 +449,7 @@ function renderStage(){
 
   // prompt in header, result card over the table
   if(done) pr.append(h('span','cat',q.category));
-  pr.append(h('span',null, isCall?`${q.callFrom}打出 ${tname(q.callTile)}，碰不碰？`:`摸到 ${tname(q.draw)}，切哪张？`));
+  pr.append(h('span',null, q.type==='riichi'?`摸到 ${tname(q.draw)}，已经能听牌，立直吗？`:isCall?`${q.callFrom}打出 ${tname(q.callTile)}，${q.choices[0]}不${q.choices[0]}？`:`摸到 ${tname(q.draw)}，切哪张？`));
   {const r=rec(q.id); pr.append(h('span','rec', r.tries?`本题 对 ${r.ok} · 错 ${r.bad}`:'第一次做'))}
   document.getElementById('nextbtn').textContent=done?'下一题':'换一题';
   if(done){
@@ -472,7 +473,7 @@ function renderStage(){
 function choose(e,q,t,key){
   e.stopPropagation();
   if(!TWO_TAP || sel===key) return answer(q,t,key);
-  sel=key; markSel(q.type==='call'?'再点一次确认':'再点一次打出');
+  sel=key; markSel(q.type!=='discard'?'再点一次确认':'再点一次打出');
 }
 function markSel(msg){
   const st=document.getElementById('stage');
@@ -493,7 +494,7 @@ function answer(q,t,key){
 }
 function renderResult(q){
   const r=h('div','result');
-  const call=q.type==='call', nm=x=>call?(x==='不碰'?'跳过':x):tname(x);
+  const call=q.type!=='discard', nm=x=>call?(x==='不碰'?'跳过':x):tname(x);
   const v=h('div','verdict '+(answered.ok?'ok':'bad'));
   v.append(h('strong',null,answered.ok?'答对了':'不对'));
   v.append(h('span',null,`你选：${nm(answered.t)}　正解：${q.answers.map(nm).join(' 或 ')}　实战：${nm(q.pick)}`+(q.ai&&q.ai.length?`　Mortal：${nm(q.ai[0].a)} ${fmtP(q.ai[0].p)}`:'')));

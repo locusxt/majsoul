@@ -13601,6 +13601,11 @@
        "t": "9m",
        "tg": false,
        "r": false
+      },
+      {
+       "t": "8s",
+       "tg": true,
+       "r": false
       }
      ],
      "melds": [
@@ -14067,6 +14072,11 @@
        "t": "5s",
        "tg": false,
        "r": true
+      },
+      {
+       "t": "4s",
+       "tg": true,
+       "r": false
       }
      ],
      "melds": [],
@@ -14311,6 +14321,11 @@
       {
        "t": "3s",
        "tg": false,
+       "r": false
+      },
+      {
+       "t": "6s",
+       "tg": true,
        "r": false
       }
      ],
@@ -18525,6 +18540,11 @@
       },
       {
        "t": "1s",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "W",
        "tg": false,
        "r": false
       }
@@ -38423,6 +38443,11 @@
        "t": "9s",
        "tg": true,
        "r": false
+      },
+      {
+       "t": "8s",
+       "tg": true,
+       "r": false
       }
      ],
      "melds": [
@@ -39063,6 +39088,11 @@
        "t": "8m",
        "tg": true,
        "r": false
+      },
+      {
+       "t": "8p",
+       "tg": true,
+       "r": false
       }
      ],
      "melds": [
@@ -39292,6 +39322,11 @@
       },
       {
        "t": "E",
+       "tg": false,
+       "r": false
+      },
+      {
+       "t": "6p",
        "tg": false,
        "r": false
       }

@@ -36,7 +36,9 @@ def snapshot(rep,key,date):
         if st is None or st['k']!=key['kyoku']: continue
         if t=='dahai' and ev['actor']!=me and 'pass' in key and norm(ev['pai'])==norm(key['pass']['tile']):
             st['np']+=1
-            if st['np']==key['pass'].get('n',1): st['act']=ev; return st
+            if st['np']==key['pass'].get('n',1):   # 这张牌已经打到牌河里，等你决定鸣不鸣
+                a=ev['actor']; st['river'][a].append({'t':ev['pai'],'tg':ev['tsumogiri'],'r':st['pend'][a]})
+                st['act']=ev; return st
         if t=='dahai' and ev['actor']==me and 'discard' in key and st['nd']+1==key['discard']:
             st['act']=ev; return st
         if t in('chi','pon','daiminkan') and ev['actor']==me and key.get('call') and st['nc']+1==key.get('n',1):

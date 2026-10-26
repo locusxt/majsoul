@@ -4,7 +4,7 @@
 
 questions.json 每题只写人工判断的部分：
   id, date, category(牌效/防守/副露), type(discard/call/riichi), src, answers, lesson, explain, situation
-  可选: added（加入题库的日期，默认等于 date）, notes {牌: 备注}（选项表备注列）, threat [座位]（没有立直时也按这些人算现物/生张，如 ["上家"]）
+  可选: added（加入题库的日期，默认等于 date）, tags [细分标签，答题后才显示], notes {牌: 备注}（选项表备注列）, threat [座位]（没有立直时也按这些人算现物/生张，如 ["上家"]）
   副露题另写: choices（如 ["吃","不碰"]，"不碰"显示为跳过）, options（各选择的向听、有效牌、备注，cut 填选择名）
   立直题（听牌时立不立）: choices ["立直","不立直"], options 同上；src 用 discard，实战按当时有没有宣言立直判定
 src: {"kyoku":"E1-1","discard":5}（第 5 次切牌前）、{"kyoku":"E4-1","call":true,"n":1}（第 1 次副露前）
@@ -175,12 +175,14 @@ reps=[(os.path.basename(p),json.load(open(p,encoding='utf-8'))) for p in reports
 out=[]
 for i,q in enumerate(qs):
     # 报告文件名以日期开头（records/2026-10-25_mortal_xxx.json），优先用同一天的报告，避免不同对局的同名局混淆
-    cand=[r for n,r in reps if n.startswith(q.get('date',''))] or [r for _,r in reps]
-    for rep in cand:
+    cand=[(n,r) for n,r in reps if n.startswith(q.get('date',''))] or reps
+    for name,rep in cand:
         st=snapshot(rep,q['src'],q.get('date'))
         if st: break
     else: raise SystemExit(f"{q['id']}: 在报告里找不到 {q['src']}")
-    o=build(q,rep,st); o['order']=i+1; o.setdefault('added',q['date']); out.append(o)
+    o=build(q,rep,st); o['order']=i+1; o.setdefault('added',q['date'])
+    m=re.search(r'_mortal_(\w+)\.json$',name); o['game']=m.group(1) if m else name   # 对局 id：Mortal 报告编号
+    out.append(o)
     print(o['id'],o['turn'],'实战',o['pick'],'|',' '.join(f"{r['cut']}:{r['shanten']}向{r['ukeire']}/{r.get('ukStd')}" for r in o.get('options',[])))
 json.dump(out,open(out_path,'w',encoding='utf-8'),ensure_ascii=False,indent=1)
 os.makedirs(seed_dir,exist_ok=True)

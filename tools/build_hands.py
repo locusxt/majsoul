@@ -150,6 +150,9 @@ def build(q,rep,st):
          else e['actual']['type'] in('dahai','reach') if q['type']=='riichi' else e['actual']['type']=='dahai')]
     if len(es)>1 and q['type']!='call':   # 同一手牌出现多次（如摸切同一张），用摸到的牌区分
         es=[e for e in es if e['tile']==st['draw']] or es
+    if len(es)>1 and q['type']=='discard':
+        es=[e for e in es if e['actual'].get('pai')==act['pai']] or es
+        if len(es)>1 and len({json.dumps(e['actual'],sort_keys=True) for e in es})==1: es=es[:1]   # 同一手牌连续摸切同一张：取第一次
     if len(es)>1 and q['type']=='riichi':
         es=[e for e in es if (e['actual']['type']=='reach')==(o['pick']=='立直')] or es
     if len(es)==1:
